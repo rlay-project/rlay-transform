@@ -5,20 +5,6 @@ const assert = require('assert');
 
 let target;
 const rlayClient = new Client();
-rlayClient.rlay.encodeValue = val => {
-  const bytesToHex = (bytes) => {
-    let hex = [];
-
-    for (let i = 0; i < bytes.length; i++) {
-      hex.push((bytes[i] >>> 4).toString(16));
-      hex.push((bytes[i] & 0xf).toString(16));
-    }
-
-    return `0x${hex.join('').replace(/^0+/, '')}`;
-  };
-
-  return bytesToHex(cbor.encode(val));
-}
 
 const simpleJson = {
   'undefined': undefined, // None
@@ -94,6 +80,19 @@ describe('RlayTransformer', () => {
       assert.equal(undefinedEntities.length, 0);
     });
 
+  });
+
+  describe('.toRlaySchemaCidIndex', () => {
+    it('works', async () => {
+      const entities = target.getRlaySchemaCidIndex();
+    });
+  });
+
+  describe('.toRlaySchemaObjectIndex', () => {
+    it('works', async () => {
+      const entities = target.getRlaySchemaObjectIndex();
+      assert.deepEqual(Object.keys(entities[0]), ['key', 'assertion']);
+    });
   });
 
 });

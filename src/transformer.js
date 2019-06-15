@@ -57,20 +57,25 @@ function isStringable (value) {
 class RlayTransformer {
   static generateLabel (client, pathRN) {
     const label = pathRN.join('.');
-    return new client.Rlay_Annotation(
+    const entity = new client.Rlay_Annotation(
       client,
       client.Rlay_Annotation.prepareRlayFormat({
         property: client.rlay.builtins.labelAnnotationProperty,
         value: label
       }));
+    this.indexMap.set(label + '.LabelAnnotation', entity);
+    return entity;
   }
 
   static generateDataProperty (client, labelAnnotation) {
-    return new client.Rlay_DataProperty(
+    const label = client.rlay.decodeValue(labelAnnotation.payload.value);
+    const entity = new client.Rlay_DataProperty(
       client,
       client.Rlay_DataProperty.prepareRlayFormat({
         annotations: [labelAnnotation.cid]
       }));
+    this.indexMap.set(label + '.DataProperty', entity);
+    return entity;
   }
 
   static generateDataPropertyAssertion (client, dataProperty, target) {
@@ -83,11 +88,14 @@ class RlayTransformer {
   }
 
   static generateObjectProperty (client, labelAnnotation) {
-    return new client.Rlay_ObjectProperty(
+    const label = client.rlay.decodeValue(labelAnnotation.payload.value);
+    const entity = new client.Rlay_ObjectProperty(
       client,
       client.Rlay_ObjectProperty.prepareRlayFormat({
         annotations: [labelAnnotation.cid]
       }));
+    this.indexMap.set(label + '.ObjectProperty', entity);
+    return entity;
   }
 
   static generateObjectPropertyAssertion (client, objectProperty, targetEntity) {
@@ -100,11 +108,14 @@ class RlayTransformer {
   }
 
   static generateClass (client, labelAnnotation) {
-    return new client.Rlay_Class(
+    const label = client.rlay.decodeValue(labelAnnotation.payload.value);
+    const entity = new client.Rlay_Class(
       client,
       client.Rlay_Class.prepareRlayFormat({
         annotations: [labelAnnotation.cid]
       }));
+    this.indexMap.set(label + '.Class', entity);
+    return entity;
   }
 
   static generateClassAssertion (client, c) {
@@ -154,12 +165,17 @@ class RlayTransformer {
     return [RLAY_TRANSFORM_PREFIX, ...prefix];
   }
 
+  static _initIndexMap () {
+    if (!this.indexMap) this.indexMap = new Map();
+  }
+
   /**
    * Generate schema using
    */
   static toRlayEntities (client, prefix, json) {
     if (!prefix) throw new Error('@prefix needs to have a value');
     const pathRN = this._assignRlayTransformPrefix(prefix);
+    this._initIndexMap();
     const arr = [];
     const properties = [];
     if (isObject(json)) {
@@ -238,6 +254,23 @@ class RlayTransformer {
 
   static toRlayEntityObjects (client, prefix, json) {
     return this.fromEntitiesToRlayPayloads(this.toRlayEntities(client, prefix, json));
+  }
+
+  static getRlaySchemaCidIndex () {
+    const index = {};
+    Array.from(this.indexMap).forEach(set => {
+      index[set[0]] = set[1].cid;
+    });
+    return index;
+  }
+
+  static getRlaySchemaObjectIndex () {
+    return Array.from(this.indexMap).map(set => {
+      return {
+        key: set[0],
+        assertion: set[1].payload,
+      };
+    });
   }
 
   static fromEntitiesToRlayPayloads (entities) {
