@@ -19,6 +19,14 @@ function isNull (value) {
   return value === null;
 }
 
+function isRegExp (value) {
+  return value && typeof value === 'object' && value.constructor === RegExp;
+}
+
+function isDate (value) {
+  return value instanceof Date;
+}
+
 function isUndefined (value) {
   return typeof value === 'undefined';
 }
@@ -46,11 +54,16 @@ function isStringArray (value) {
 }
 
 function isEmpty (value) {
-  return isUndefined(value) || isEmptyObject(value) || isEmptyArray(value)
+  return isUndefined(value) //|| isEmptyObject(value) || isEmptyArray(value)
 }
 
 function isStringable (value) {
-  return isString(value) || isNumber(value) || isBoolean(value) || isNull(value)
+  return isString(value) ||
+    isNumber(value) ||
+    isBoolean(value) ||
+    isNull(value) ||
+    isRegExp(value) ||
+    isDate(value)
 }
 
 
@@ -83,7 +96,7 @@ class RlayTransformer {
       client,
       client.Rlay_DataPropertyAssertion.prepareRlayFormat({
         property: dataProperty.cid,
-        target: client.rlay.encodeValue(target)
+        target: target
       }));
   }
 
@@ -226,7 +239,7 @@ class RlayTransformer {
             });
             arr.push(...[label, op, ...opas]);
             properties.push(...opas);
-          } else if (isArray(value)) {
+          } else if (isArray(value) && !isEmptyArray(value)) {
             // an array with mixed elements (DataProperty/ObjectProperty)
             // note: this does not capture or preserve the order of the array's elements
             const label = this.generateLabel(client, [...pathRN, key]);

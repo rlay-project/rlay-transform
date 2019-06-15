@@ -1,21 +1,27 @@
+/* eslint-env node, mocha */
 const { RlayTransformer } = require('../src/');
 const { Client } = require('@rlay/rlay-client-lib');
-const cbor = require('cbor');
 const assert = require('assert');
 
 let target;
 const rlayClient = new Client();
 
-const simpleJson = {
-  'undefined': undefined, // None
-  'null': null, // DataProperty
-  'string': 'abc', // DataProperty
-  'stringempty': '', // DataProperty
-  'number': 1, // DataProperty
-  'float': 1.15, // DataProperty
-  'boolean': true, // DataProperty
-  'date': new Date(), // DataProperty
-  'regex': new RegExp(), // DataProperty
+const entitiesLength = {
+  'undefined': 4,
+  'null': 7,
+  'string': 7,
+  'stringempty': 7,
+  'number': 7,
+  'boolean': 7,
+  'date': 7,
+  'regex': 7,
+  'object': 17,
+  'objectEmpty': 11,
+  'arrayWithObject': 28,
+  'arrayWithNestedObject': 48,
+  'arrayWithMixedElements': 20,
+  'arrayWithStrings': 10,
+  'arrayEmpty': 4
 };
 
 const complexJson = {
@@ -64,14 +70,35 @@ describe('RlayTransformer', () => {
   beforeEach(() => target = RlayTransformer)
 
   describe('.toRlayEntityObjects', () => {
-    it('works on a simple object', async () => {
-      const entities = target.toRlayEntityObjects(rlayClient, 'SimpleObject', simpleJson);
-      const undefinedEntities = entities.filter(e => e === undefined);
-      assert.equal(undefinedEntities.length, 0);
 
-      //const start = Date.now();
-      //console.log(await Promise.all(entities.map(e => rlayClient.createEntity(e))));
-      //console.log(Date.now() - start);
+    Object.keys(complexJson).forEach(key => {
+      context(`${key} properties`, () => {
+        let entities = [];
+
+        before(() => {
+          const obj = {};
+          obj[key] = complexJson[key];
+          entities = target.toRlayEntityObjects(rlayClient, key, obj);
+        });
+
+        it('has no `undefined` entities', () => {
+          const undefinedEntities = entities.filter(e => e === undefined);
+          assert.equal(undefinedEntities.length, 0);
+        });
+
+        it(`produces ${entitiesLength[key]} entities`, () => {
+          assert.equal(entities.length, entitiesLength[key]);
+        });
+
+        it('decodes annotation values correctly', () => {
+          const dpas = entities.filter(e => e.type === 'Annotation');
+          const dpaValues = dpas.map(dpa => rlayClient.rlay.decodeValue(dpa.value));
+          assert.equal(dpaValues.includes(`RlayTransform.${key}`), true);
+          if (!['undefined', 'arrayEmpty'].includes(key)) {
+            assert.equal(dpaValues.includes(`RlayTransform.${key}.${key}`), true);
+          }
+        });
+      });
     });
 
     it('works on a complex object', async () => {
