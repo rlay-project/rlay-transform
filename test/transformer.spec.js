@@ -1,6 +1,7 @@
 const { RlayTransformer } = require('../src/');
 const { Client } = require('@rlay/rlay-client-lib');
 const cbor = require('cbor');
+const assert = require('assert');
 
 let target;
 const rlayClient = new Client();
@@ -24,14 +25,14 @@ const simpleJson = {
   'null': null, // DataProperty
   'string': 'abc', // DataProperty
   'stringempty': '', // DataProperty
-  'number': -1, // DataProperty
+  'number': 1, // DataProperty
   'float': 1.15, // DataProperty
   'boolean': true, // DataProperty
   'date': new Date(), // DataProperty
   'regex': new RegExp(), // DataProperty
 };
 
-const testJson = {
+const complexJson = {
   'undefined': undefined, // None
   'null': null, // DataProperty
   'string': 'abc', // DataProperty
@@ -68,6 +69,7 @@ const testJson = {
       }]
     },
   ],
+  'arrayWithMixedElements': [null, 1, { a: 1, B: 'b' }],
   'arrayWithStrings': [null, 1, 'a', false],
   'arrayEmpty': []
 };
@@ -78,10 +80,18 @@ describe('RlayTransformer', () => {
   describe('.toRlayEntityObjects', () => {
     it('works on a simple object', async () => {
       const entities = target.toRlayEntityObjects(rlayClient, 'SimpleObject', simpleJson);
-      console.log(entities);
-      const start = Date.now();
-      console.log(await Promise.all(entities.map(e => rlayClient.createEntity(e))));
-      console.log(Date.now() - start);
+      const undefinedEntities = entities.filter(e => e === undefined);
+      assert.equal(undefinedEntities.length, 0);
+
+      //const start = Date.now();
+      //console.log(await Promise.all(entities.map(e => rlayClient.createEntity(e))));
+      //console.log(Date.now() - start);
+    });
+
+    it('works on a complex object', async () => {
+      const entities = target.toRlayEntityObjects(rlayClient, 'ComplexObject', complexJson);
+      const undefinedEntities = entities.filter(e => e === undefined);
+      assert.equal(undefinedEntities.length, 0);
     });
 
   });

@@ -82,8 +82,21 @@ class RlayTransformer {
       }));
   }
 
-  static generateObjectProperty (label, descripton) {
+  static generateObjectProperty (client, labelAnnotation) {
+    return new client.Rlay_ObjectProperty(
+      client,
+      client.Rlay_ObjectProperty.prepareRlayFormat({
+        annotations: [labelAnnotation.cid]
+      }));
+  }
 
+  static generateObjectPropertyAssertion (client, objectProperty, targetEntity) {
+    return new client.Rlay_ObjectPropertyAssertion(
+      client,
+      client.Rlay_ObjectPropertyAssertion.prepareRlayFormat({
+        property: objectProperty.cid,
+        target: targetEntity.cid
+      }));
   }
 
   static generateClass (client, labelAnnotation) {
@@ -148,7 +161,7 @@ class RlayTransformer {
     if (!prefix) throw new Error('@prefix needs to have a value');
     const pathRN = this._assignRlayTransformPrefix(prefix);
     const arr = [];
-    if (isArray(json) && isObjectArray(json)) return json.map(RlayTransformer.transform)
+    const properties = [];
     if (isObject(json)) {
       const objectKeys = Object.keys(json);
       // create classes for that object
@@ -156,25 +169,69 @@ class RlayTransformer {
       const c       = this.generateClass(client, cLabel);
       const ca      = this.generateClassAssertion(client, c);
       arr.push(...[cLabel, c, ca]);
+      properties.push(ca);
       objectKeys.forEach(key => {
         const value = json[key];
         if (!isEmpty(value)) {
           if (isStringable(value)) {
+            // normal single value DataProperty
             const label = this.generateLabel(client, [...pathRN, key]);
             const dp    = this.generateDataProperty(client, label);
             const dpa   = this.generateDataPropertyAssertion(client, dp, value);
             arr.push(...[label, dp, dpa]);
+            properties.push(dpa);
           } else if (isArray(value) && isStringArray(value)) {
-            arr.push([...pathRN, key]);
+            // an array of single value DataProperties
+            // note: this does not capture or preserve the order of the array's elements
+            const label = this.generateLabel(client, [...pathRN, key]);
+            const dp    = this.generateDataProperty(client, label);
+            const dpas  = value.map(v => this.generateDataPropertyAssertion(client, dp, v));
+            arr.push(...[label, dp, ...dpas]);
+            properties.push(...dpas);
           } else if (isObject(value)) {
-            arr.push([...pathRN, key]);
+            // a single value ObjectProperty
+            const entities = this.toRlayEntities(client, [...pathRN, key], value);
+            const i     = entities.filter(e => e.type === 'Individual').shift();
+            const label = this.generateLabel(client, [...pathRN, key]);
+            const op    = this.generateObjectProperty(client, label);
+            const opa   = this.generateObjectPropertyAssertion(client, op, i);
+            arr.push(...[label, op, opa, ...entities]);
+            properties.push(opa);
           } else if (isArray(value) && isObjectArray(value)) {
-            arr.push([...pathRN, key]);
-            arr.push(...RlayTransformer.transform(client, pathRN, value));
+            // an array of single value ObjectProperties
+            // note: this does not capture or preserve the order of the array's elements
+            const label = this.generateLabel(client, [...pathRN, key]);
+            const op    = this.generateObjectProperty(client, label);
+            const opas  = value.map(v => {
+              const entities = this.toRlayEntities(client, [...pathRN, key], v);
+              const i   = entities.filter(e => e.type === 'Individual').shift();
+              arr.push(...entities);
+              return this.generateObjectPropertyAssertion(client, op, i);
+            });
+            arr.push(...[label, op, ...opas]);
+            properties.push(...opas);
+          } else if (isArray(value)) {
+            // an array with mixed elements (DataProperty/ObjectProperty)
+            // note: this does not capture or preserve the order of the array's elements
+            const label = this.generateLabel(client, [...pathRN, key]);
+            const dp    = this.generateDataProperty(client, label);
+            const op    = this.generateObjectProperty(client, label);
+            const xpas  = value.map(v => {
+              if (isStringable(v)) {
+                return this.generateDataPropertyAssertion(client, dp, v);
+              } else if (isObject(v)) {
+                const entities = this.toRlayEntities(client, [...pathRN, key], v);
+                const i   = entities.filter(e => e.type === 'Individual').shift();
+                arr.push(...entities);
+                return this.generateObjectPropertyAssertion(client, op, i);
+              }
+            });
+            arr.push(...[label, dp, op, ...xpas]);
+            properties.push(...xpas);
           }
         }
       });
-      arr.push(this.generateIndividual(client, arr));
+      arr.push(this.generateIndividual(client, properties));
     }
     return arr;
   }
