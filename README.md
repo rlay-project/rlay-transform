@@ -7,7 +7,7 @@ The Rlay Transformer allows to transform various data formats into Rlay Entity O
 ## Usage
 
 ```javascript
-const { RlayTransformer } = require('@rlay/transformer');
+const { RlayTransformer } = require('@rlay/transform');
 const { Client } = require('@rlay/rlay-client-lib');
 
 const rlayClient = new Client();
