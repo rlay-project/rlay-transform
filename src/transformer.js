@@ -266,7 +266,7 @@ class RlayTransformer {
   }
 
   static toRlayEntityObjects (client, prefix, json) {
-    return this.fromEntitiesToRlayPayloads(this.toRlayEntities(client, prefix, json));
+    return this.toRlayEntities(client, prefix, json).map(entity => entity.payload);
   }
 
   static getRlaySchemaCidIndex () {
@@ -284,10 +284,6 @@ class RlayTransformer {
         assertion: set[1].payload,
       };
     });
-  }
-
-  static fromEntitiesToRlayPayloads (entities) {
-    return entities.map(entity => entity.payload);
   }
 
   static set schemaCmds (cmds) {
