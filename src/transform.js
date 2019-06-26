@@ -67,7 +67,7 @@ function isStringable (value) {
 }
 
 
-class RlayTransformer {
+class RlayTransform {
   static generateLabel (client, pathRN) {
     const label = pathRN.join('.');
     const entity = new client.Rlay_Annotation(
@@ -160,7 +160,7 @@ class RlayTransformer {
 
   static _getKeys (value) {
     if (isArray(value)) {
-      return Array.from(new Set(...value.map(RlayTransformer._getKeys)));
+      return Array.from(new Set(...value.map(RlayTransform._getKeys)));
     }
     return Object.keys(value);
   }
@@ -295,4 +295,4 @@ class RlayTransformer {
   }
 }
 
-module.exports = RlayTransformer;
+module.exports = RlayTransform;

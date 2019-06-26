@@ -1,5 +1,5 @@
 /* eslint-env node, mocha */
-const { RlayTransformer } = require('../src/');
+const { RlayTransform } = require('../src/');
 const { Client } = require('@rlay/rlay-client-lib');
 const assert = require('assert');
 
@@ -66,8 +66,8 @@ const complexJson = {
   'arrayEmpty': []
 };
 
-describe('RlayTransformer', () => {
-  beforeEach(() => target = RlayTransformer)
+describe('RlayTransform', () => {
+  beforeEach(() => target = RlayTransform)
 
   describe('.toRlayEntityObjects', () => {
 

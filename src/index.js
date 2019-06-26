@@ -1,3 +1,3 @@
-const RlayTransformer = require('./transformer');
+const RlayTransform = require('./transform');
 
-module.exports = { RlayTransformer };
+module.exports = { RlayTransform };
