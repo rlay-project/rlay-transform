@@ -1,6 +1,6 @@
 {
   "name": "@rlay/transform",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Rlay Transform contains methods for parsing various input formats (e.g. JSON, CSV) and converting it to Rlay Entity Objects and the other way around",
   "main": "./src/index.js",
   "scripts": {
