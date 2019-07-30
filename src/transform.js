@@ -8,73 +8,57 @@ function isStringable (value) {
 class RlayTransform {
   static generateLabel (client, pathRN) {
     const label = pathRN.join('.');
-    const entity = new client.Rlay_Annotation(
-      client,
-      client.Rlay_Annotation.prepareRlayFormat({
-        property: client.rlay.builtins.labelAnnotationProperty,
-        value: label
-      }));
+    const entity = client.Rlay_Annotation.from({
+      property: client.rlay.builtins.labelAnnotationProperty,
+      value: label
+    });
     this.indexMap.set(label + '.LabelAnnotation', entity);
     return entity;
   }
 
   static generateDataProperty (client, labelAnnotation) {
     const label = client.rlay.decodeValue(labelAnnotation.payload.value);
-    const entity = new client.Rlay_DataProperty(
-      client,
-      client.Rlay_DataProperty.prepareRlayFormat({
-        annotations: [labelAnnotation.cid]
-      }));
+    const entity = client.Rlay_DataProperty.from({
+      annotations: [labelAnnotation.cid]
+    });
     this.indexMap.set(label + '.DataProperty', entity);
     return entity;
   }
 
   static generateDataPropertyAssertion (client, dataProperty, target) {
-    return new client.Rlay_DataPropertyAssertion(
-      client,
-      client.Rlay_DataPropertyAssertion.prepareRlayFormat({
-        property: dataProperty.cid,
-        target: target
-      }));
+    return client.Rlay_DataPropertyAssertion.from({
+      property: dataProperty.cid,
+      target: target
+    });
   }
 
   static generateObjectProperty (client, labelAnnotation) {
     const label = client.rlay.decodeValue(labelAnnotation.payload.value);
-    const entity = new client.Rlay_ObjectProperty(
-      client,
-      client.Rlay_ObjectProperty.prepareRlayFormat({
-        annotations: [labelAnnotation.cid]
-      }));
+    const entity = client.Rlay_ObjectProperty.from({
+      annotations: [labelAnnotation.cid]
+    });
     this.indexMap.set(label + '.ObjectProperty', entity);
     return entity;
   }
 
   static generateObjectPropertyAssertion (client, objectProperty, targetEntity) {
-    return new client.Rlay_ObjectPropertyAssertion(
-      client,
-      client.Rlay_ObjectPropertyAssertion.prepareRlayFormat({
-        property: objectProperty.cid,
-        target: targetEntity.cid
-      }));
+    return client.Rlay_ObjectPropertyAssertion.from({
+      property: objectProperty.cid,
+      target: targetEntity.cid
+    });
   }
 
   static generateClass (client, labelAnnotation) {
     const label = client.rlay.decodeValue(labelAnnotation.payload.value);
-    const entity = new client.Rlay_Class(
-      client,
-      client.Rlay_Class.prepareRlayFormat({
-        annotations: [labelAnnotation.cid]
-      }));
+    const entity = client.Rlay_Class.from({
+      annotations: [labelAnnotation.cid]
+    });
     this.indexMap.set(label + '.Class', entity);
     return entity;
   }
 
   static generateClassAssertion (client, c) {
-    return new client.Rlay_ClassAssertion(
-      client,
-      client.Rlay_ClassAssertion.prepareRlayFormat({
-        class: c.cid
-      }));
+    return client.Rlay_ClassAssertion.from({class: c.cid});
   }
 
   static generateIndividual (client, entities) {
@@ -83,13 +67,11 @@ class RlayTransform {
     const getTypeOPA = entity => getType(entity, 'ObjectPropertyAssertion')
     const getTypeDPA = entity => getType(entity, 'DataPropertyAssertion')
     const getCid = entity => entity.cid
-    return new client.Rlay_Individual(
-      client,
-      client.Rlay_Individual.prepareRlayFormat({
-        class_assertions: entities.filter(getTypeCA).map(getCid),
-        object_property_assertions: entities.filter(getTypeOPA).map(getCid),
-        data_property_assertions: entities.filter(getTypeDPA).map(getCid)
-      }));
+    return client.Rlay_Individual.from({
+      class_assertions: entities.filter(getTypeCA).map(getCid),
+      object_property_assertions: entities.filter(getTypeOPA).map(getCid),
+      data_property_assertions: entities.filter(getTypeDPA).map(getCid)
+    });
   }
 
   static _capitalizeFirstLetter (string) {
