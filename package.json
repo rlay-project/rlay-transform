@@ -9,7 +9,8 @@
   "author": "Michael Hirn <michael.j.hirn@gmail.com>",
   "license": "ISC",
   "dependencies": {
-    "@rlay/rlay-client-lib": "^0.2.0-pre.8"
+    "@rlay/rlay-client-lib": "^0.2.0-pre.8",
+    "check-types": "^9.0.1"
   },
   "devDependencies": {
     "mocha": "^6.1.4"
