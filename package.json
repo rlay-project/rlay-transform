@@ -9,7 +9,7 @@
   "author": "Michael Hirn <michael.j.hirn@gmail.com>",
   "license": "ISC",
   "dependencies": {
-    "@rlay/rlay-client-lib": "../rlay-utils/rlay-client-lib",
+    "@rlay/rlay-client-lib": "^0.2.0-pre.9",
     "check-types": "^9.0.1"
   },
   "devDependencies": {
