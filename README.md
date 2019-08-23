@@ -1,13 +1,15 @@
-# Rlay Transformer
+# RlayTransform
 
-The Rlay Transformer allows to transform various data formats into Rlay Entity Objects. Currently supported data formats are:
+RlayTransform transforms various data formats into Rlay Entity Objects. Currently supported data formats are:
 
 - `JSON`
+
+> Other data formats (e.g. XML) are indirectly supported by using an intermediate transformer that transforms to JSON and then using RlayTransform.
 
 ## Usage
 
 ```javascript
-const { RlayTransformer } = require('@rlay/transform');
+const { RlayTransform } = require('@rlay/transform');
 const { Client } = require('@rlay/rlay-client-lib');
 
 const rlayClient = new Client();
@@ -54,7 +56,7 @@ const json = {
   'arrayEmpty': []
 };
 
-const entities = RlayTransformer.toRlayEntityObjects(rlayClient, 'ExampleObject', json);
+const entities = RlayTransform.toRlayEntityObjects(rlayClient, 'ExampleObject', json);
 
 await Promise.all(entities.map(e => rlayClient.createEntity(e))));
 ```
