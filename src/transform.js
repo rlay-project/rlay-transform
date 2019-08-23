@@ -1,142 +1,64 @@
-// BASE
-function isString (value) {
-  return typeof value === 'string' || value instanceof String;
-}
-
-function isNumber (value) {
-  return typeof value === 'number' && isFinite(value);
-}
-
-function isArray (value) {
-  return value && typeof value === 'object' && value.constructor === Array;
-}
-
-function isObject (value) {
-  return value && typeof value === 'object' && value.constructor === Object;
-}
-
-function isNull (value) {
-  return value === null;
-}
-
-function isRegExp (value) {
-  return value && typeof value === 'object' && value.constructor === RegExp;
-}
-
-function isDate (value) {
-  return value instanceof Date;
-}
-
-function isUndefined (value) {
-  return typeof value === 'undefined';
-}
-
-function isBoolean (value) {
-  return typeof value === 'boolean';
-}
-
-// COMPLEX
-
-function isEmptyObject (value) {
-  return isObject(value) && Object.keys(value).length === 0 && value.constructor === Object
-}
-
-function isEmptyArray (value) {
-  return isArray(value) && value.length === 0
-}
-
-function isObjectArray (value) {
-  return !isEmptyArray(value) && value.every(isObject);
-}
-
-function isStringArray (value) {
-  return !isEmptyArray(value) && value.every(isStringable);
-}
-
-function isEmpty (value) {
-  return isUndefined(value) //|| isEmptyObject(value) || isEmptyArray(value)
-}
+const check = require('check-types');
 
 function isStringable (value) {
-  return isString(value) ||
-    isNumber(value) ||
-    isBoolean(value) ||
-    isNull(value) ||
-    isRegExp(value) ||
-    isDate(value)
+  return check.string(value) || check.number(value) || check.boolean(value) ||
+    check.null(value) || value.constructor === RegExp || check.date(value)
 }
-
 
 class RlayTransform {
   static generateLabel (client, pathRN) {
     const label = pathRN.join('.');
-    const entity = new client.Rlay_Annotation(
-      client,
-      client.Rlay_Annotation.prepareRlayFormat({
-        property: client.rlay.builtins.labelAnnotationProperty,
-        value: label
-      }));
+    const entity = client.Rlay_Annotation.from({
+      property: client.rlay.builtins.labelAnnotationProperty,
+      value: label
+    });
     this.indexMap.set(label + '.LabelAnnotation', entity);
     return entity;
   }
 
   static generateDataProperty (client, labelAnnotation) {
     const label = client.rlay.decodeValue(labelAnnotation.payload.value);
-    const entity = new client.Rlay_DataProperty(
-      client,
-      client.Rlay_DataProperty.prepareRlayFormat({
-        annotations: [labelAnnotation.cid]
-      }));
+    const entity = client.Rlay_DataProperty.from({
+      annotations: [labelAnnotation.cid]
+    });
     this.indexMap.set(label + '.DataProperty', entity);
     return entity;
   }
 
   static generateDataPropertyAssertion (client, dataProperty, target) {
-    return new client.Rlay_DataPropertyAssertion(
-      client,
-      client.Rlay_DataPropertyAssertion.prepareRlayFormat({
-        property: dataProperty.cid,
-        target: target
-      }));
+    return client.Rlay_DataPropertyAssertion.from({
+      property: dataProperty.cid,
+      target: target
+    });
   }
 
   static generateObjectProperty (client, labelAnnotation) {
     const label = client.rlay.decodeValue(labelAnnotation.payload.value);
-    const entity = new client.Rlay_ObjectProperty(
-      client,
-      client.Rlay_ObjectProperty.prepareRlayFormat({
-        annotations: [labelAnnotation.cid]
-      }));
+    const entity = client.Rlay_ObjectProperty.from({
+      annotations: [labelAnnotation.cid]
+    });
     this.indexMap.set(label + '.ObjectProperty', entity);
     return entity;
   }
 
   static generateObjectPropertyAssertion (client, objectProperty, targetEntity) {
-    return new client.Rlay_ObjectPropertyAssertion(
-      client,
-      client.Rlay_ObjectPropertyAssertion.prepareRlayFormat({
-        property: objectProperty.cid,
-        target: targetEntity.cid
-      }));
+    return client.Rlay_ObjectPropertyAssertion.from({
+      property: objectProperty.cid,
+      target: targetEntity.cid
+    });
   }
 
   static generateClass (client, labelAnnotation) {
     const label = client.rlay.decodeValue(labelAnnotation.payload.value);
-    const entity = new client.Rlay_Class(
-      client,
-      client.Rlay_Class.prepareRlayFormat({
-        annotations: [labelAnnotation.cid]
-      }));
+    const entity = client.Rlay_Class.from({
+      annotations: [labelAnnotation.cid]
+    });
     this.indexMap.set(label + '.Class', entity);
     return entity;
   }
 
   static generateClassAssertion (client, c) {
-    return new client.Rlay_ClassAssertion(
-      client,
-      client.Rlay_ClassAssertion.prepareRlayFormat({
-        class: c.cid
-      }));
+    return client.Rlay_ClassAssertion.from({class: c.cid});
   }
 
   static generateIndividual (client, entities) {
@@ -145,13 +67,11 @@ class RlayTransform {
     const getTypeOPA = entity => getType(entity, 'ObjectPropertyAssertion')
     const getTypeDPA = entity => getType(entity, 'DataPropertyAssertion')
     const getCid = entity => entity.cid
-    return new client.Rlay_Individual(
-      client,
-      client.Rlay_Individual.prepareRlayFormat({
-        class_assertions: entities.filter(getTypeCA).map(getCid),
-        object_property_assertions: entities.filter(getTypeOPA).map(getCid),
-        data_property_assertions: entities.filter(getTypeDPA).map(getCid)
-      }));
+    return client.Rlay_Individual.from({
+      class_assertions: entities.filter(getTypeCA).map(getCid),
+      object_property_assertions: entities.filter(getTypeOPA).map(getCid),
+      data_property_assertions: entities.filter(getTypeDPA).map(getCid)
+    });
   }
 
   static _capitalizeFirstLetter (string) {
@@ -159,7 +79,7 @@ class RlayTransform {
   }
 
   static _getKeys (value) {
-    if (isArray(value)) {
+    if (check.array(value)) {
       return Array.from(new Set(...value.map(RlayTransform._getKeys)));
     }
     return Object.keys(value);
@@ -169,7 +89,7 @@ class RlayTransform {
   static _assignRlayTransformPrefix (prefix) {
     const RLAY_TRANSFORM_PREFIX = 'RlayTransform';
     // check that the prefix is an array already
-    if (!isArray(prefix)) return this._assignRlayTransformPrefix([prefix]);
+    if (check.not.array(prefix)) return this._assignRlayTransformPrefix([prefix]);
     // check if it has the Rlay Transform Prefix already
     if (prefix[0] === RLAY_TRANSFORM_PREFIX) {
       // ok, return it as is
@@ -191,7 +111,7 @@ class RlayTransform {
     this._initIndexMap();
     const arr = [];
     const properties = [];
-    if (isObject(json)) {
+    if (check.object(json)) {
       const objectKeys = Object.keys(json);
       // create classes for that object
       const cLabel  = this.generateLabel(client, pathRN);
@@ -201,7 +121,7 @@ class RlayTransform {
       properties.push(ca);
       objectKeys.forEach(key => {
         const value = json[key];
-        if (!isEmpty(value)) {
+        if (check.not.undefined(value)) {
           if (isStringable(value)) {
             // normal single value DataProperty
             const label = this.generateLabel(client, [...pathRN, key]);
@@ -209,7 +129,9 @@ class RlayTransform {
             const dpa   = this.generateDataPropertyAssertion(client, dp, value);
             arr.push(...[label, dp, dpa]);
             properties.push(dpa);
-          } else if (isArray(value) && isStringArray(value)) {
+          } else if (check.array(value) &&
+            check.nonEmptyArray(value) &&
+            check.all(value.map(isStringable))) {
             // an array of single value DataProperties
             // note: this does not capture or preserve the order of the array's elements
             const label = this.generateLabel(client, [...pathRN, key]);
@@ -217,7 +139,7 @@ class RlayTransform {
             const dpas  = value.map(v => this.generateDataPropertyAssertion(client, dp, v));
             arr.push(...[label, dp, ...dpas]);
             properties.push(...dpas);
-          } else if (isObject(value)) {
+          } else if (check.object(value)) {
             // a single value ObjectProperty
             const entities = this.toRlayEntities(client, [...pathRN, key], value);
             const i     = entities.filter(e => e.type === 'Individual').shift();
@@ -226,7 +148,9 @@ class RlayTransform {
             const opa   = this.generateObjectPropertyAssertion(client, op, i);
             arr.push(...[label, op, opa, ...entities]);
             properties.push(opa);
-          } else if (isArray(value) && isObjectArray(value)) {
+          } else if (check.array(value) &&
+            check.nonEmptyArray(value) &&
+            check.all(value.map(check.object.bind(check)))) {
             // an array of single value ObjectProperties
             // note: this does not capture or preserve the order of the array's elements
             const label = this.generateLabel(client, [...pathRN, key]);
@@ -239,7 +163,7 @@ class RlayTransform {
             });
             arr.push(...[label, op, ...opas]);
             properties.push(...opas);
-          } else if (isArray(value) && !isEmptyArray(value)) {
+          } else if (check.array(value) && check.nonEmptyArray(value)) {
             // an array with mixed elements (DataProperty/ObjectProperty)
             // note: this does not capture or preserve the order of the array's elements
             const label = this.generateLabel(client, [...pathRN, key]);
@@ -248,7 +172,7 @@ class RlayTransform {
             const xpas  = value.map(v => {
               if (isStringable(v)) {
                 return this.generateDataPropertyAssertion(client, dp, v);
-              } else if (isObject(v)) {
+              } else if (check.object(v)) {
                 const entities = this.toRlayEntities(client, [...pathRN, key], v);
                 const i   = entities.filter(e => e.type === 'Individual').shift();
                 arr.push(...entities);
