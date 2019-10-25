@@ -126,8 +126,8 @@ describe('RlayTransform', () => {
       const mainI = entities.slice(-1).pop();
       assert.equal(entities.length, 23);
       assert.deepEqual(mainI.object_property_assertions, [
-        '0x019a80031b20852139a92a1296bd397748fd7b61a1c27543ea71f173f5f16a37a7422d7ab23b',
-        '0x019a80031b20b3dc311bbb808bd9438c7fa8ffe89a84d2146aac454ffa1748f034f4ba942dd0'
+        '0x019a80031b20fe16de8c3ecd48df1302218356a37fdd11c263f8f357894d83cabe1a0963be02',
+        '0x019a80031b20a07443c456ad5d7259eaec0270598c4059fdec1fdd5b39ec41124d551e5fc2b3'
       ]);
     });
 
@@ -142,7 +142,7 @@ describe('RlayTransform', () => {
       assert.equal(entities.length, 19);
       const mainI = entities.slice(-1).pop();
       assert.deepEqual(mainI.object_property_assertions, [
-        '0x019a80031b20bcad667630c9f21e62f965120e7c7daf6e2130c276e22ae7a45572b9878c90ce'
+        '0x019a80031b201697362b1ca298363d1140822ccd4828ca6f27b14509d44a8c70179657d96def'
       ]);
     });
 
@@ -158,6 +158,5 @@ describe('RlayTransform', () => {
         assert.deepEqual(Object.keys(entities[0]), ['key', 'assertion']);
       });
     });
-
   });
 });

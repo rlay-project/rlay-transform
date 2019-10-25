@@ -1,4 +1,4 @@
-const clone = json => JSON.parse(JSON.stringify(json))
+const date = new Date();
 
 module.exports = {
   ordered: {
@@ -10,7 +10,7 @@ module.exports = {
         'stringempty': '', // DataProperty
         'number': 1, // DataProperty
         'boolean': true, // DataProperty
-        'date': new Date(), // DataProperty
+        'date': date, // DataProperty
         'regex': new RegExp(), // DataProperty
         'object': { a: 1, B: 'b' }, // ObjectProperty, Class
         'objectEmpty': { }, // None
@@ -144,7 +144,7 @@ module.exports = {
         'stringempty': '', // DataProperty
         'number': 1, // DataProperty
         'boolean': true, // DataProperty
-        'date': new Date(), // DataProperty
+        'date': date, // DataProperty
         'regex': new RegExp(), // DataProperty
         'object': { a: 1, B: 'b' }, // ObjectProperty, Class
         'objectEmpty': { }, // None
@@ -193,7 +193,7 @@ module.exports = {
         'object': 17,
         'objectEmpty': 11,
         'arrayWithObject': 20,
-        'arrayWithNestedObject': 27,
+        'arrayWithNestedObject': 28,
         'arrayWithMixedElements': 19,
         'arrayWithStrings': 10,
         'arrayWithDuplicateObjects': 19,

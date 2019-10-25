@@ -100,7 +100,7 @@ class RlayTransform {
     const op = this.generateObjectProperty(client, label);
     // remove Property that don't belong to this Individual
     entities.forEach(Property.remove);
-    const i = entities.filter(e => e.type === 'Individual').shift();
+    const i = entities.filter(e => e.type === 'Individual').pop();
     const opa = new Property(this.generateObjectPropertyAssertion(client, op, i));
     return [label, op, opa, ...entities];
   }
